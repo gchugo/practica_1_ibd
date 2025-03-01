@@ -4,7 +4,7 @@ import json
 import requests
 
 # URL de la API a la que se enviarán los datos
-API_URL = "http://localhost:5000/sensor-data"  # Cambia esta URL a la de tu API
+API_URL = "http://localhost:5012"  # Cambia esta URL a la de tu API
 
 # Función para generar datos aleatorios de un sensor de ocupación
 def generate_occupancy_data(sensor_id):

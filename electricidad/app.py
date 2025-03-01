@@ -35,5 +35,5 @@ def simulate_single_power_meter(sensor_id, api_url):
 
 if __name__ == "__main__":
     # Dirección de la API
-    api_url = "http://localhost:5000/sensor-data"  # Asegúrate de que tu API esté corriendo en esta URL
+    api_url = "http://localhost:5012/api/electricidad"  # Asegúrate de que tu API esté corriendo en esta URL
     simulate_single_power_meter(sensor_id=1, api_url=api_url)
