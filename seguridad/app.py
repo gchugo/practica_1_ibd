@@ -1,6 +1,10 @@
 import random
 import time
 import json
+import requests
+
+# URL de la API a la que se enviarán los datos
+API_URL = "http://localhost:5000/sensor-data"  # Cambia esta URL a la de tu API
 
 # Función para generar datos aleatorios de una cámara de seguridad
 def generate_camera_data(camera_id):
@@ -25,11 +29,18 @@ def generate_camera_data(camera_id):
     }
     return data
 
-# Simula los datos de una cámara de seguridad
+# Simula los datos de una cámara de seguridad y los envía a la API
 def simulate_security_camera(camera_id):
     while True:
         data = generate_camera_data(camera_id)
-        print(json.dumps(data))  # Imprime los datos en formato JSON
+        try:
+            response = requests.post(API_URL, json=data)
+            if response.status_code == 200:
+                print(f"Datos enviados correctamente: {json.dumps(data)}")
+            else:
+                print(f"Error al enviar datos: {response.status_code} - {response.text}")
+        except requests.exceptions.RequestException as e:
+            print(f"Error de conexión: {e}")
         time.sleep(120)  # Espera 2 minutos (120 segundos) antes de generar los próximos datos
 
 if __name__ == "__main__":
