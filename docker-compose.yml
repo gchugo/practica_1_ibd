@@ -1,0 +1,127 @@
+version: '3'
+services:
+  rabbitmq:
+    image: "rabbitmq:3-management"
+    container_name: RABBITMQ_HOST
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+  api:
+    build: ./api-gateway
+    ports:
+      - "5012:5012"
+    depends_on:
+      - rabbitmq
+
+  sensor_temperature_1:
+    build: ./temperatura
+    depends_on:
+      - rabbitmq
+
+  sensor_temperature_2:
+    build: ./temperatura
+    depends_on:
+      - rabbitmq
+
+  sensor_temperature_3:
+    build: ./temperatura
+    depends_on:
+      - rabbitmq
+
+  sensor_temperature_4:
+    build: ./temperatura
+    depends_on:
+      - rabbitmq
+
+  sensor_occupancy_1:
+    build: ./ocupacion
+    depends_on:
+      - rabbitmq
+
+  sensor_occupancy_2:
+    build: ./ocupacion
+    depends_on:
+      - rabbitmq
+
+  sensor_occupancy_3:
+    build: ./ocupacion
+    depends_on:
+      - rabbitmq
+
+  sensor_occupancy_4:
+    build: ./ocupacion
+    depends_on:
+      - rabbitmq
+
+  sensor_occupancy_5:
+    build: ./ocupacion
+    depends_on:
+      - rabbitmq
+
+  sensor_occupancy_6:
+    build: ./ocupacion
+    depends_on:
+      - rabbitmq
+
+  sensor_power_1:
+    build: ./electricidad
+    depends_on:
+      - rabbitmq
+
+  sensor_power_2:
+    build: ./electricidad
+    depends_on:
+      - rabbitmq
+
+  sensor_power_3:
+    build: ./electricidad
+    depends_on:
+      - rabbitmq
+
+  sensor_power_4:
+    build: ./electricidad
+    depends_on:
+      - rabbitmq
+
+  sensor_power_5:
+    build: ./electricidad
+    depends_on:
+      - rabbitmq
+
+  sensor_power_6:
+    build: ./electricidad
+    depends_on:
+      - rabbitmq
+
+  sensor_power_7:
+    build: ./electricidad
+    depends_on:
+      - rabbitmq
+
+  sensor_security_1:
+    build: ./seguridad
+    depends_on:
+      - rabbitmq
+
+  sensor_security_2:
+    build: ./seguridad
+    depends_on:
+      - rabbitmq
+
+  sensor_security_3:
+    build: ./seguridad
+    depends_on:
+      - rabbitmq
+
+  sensor_security_4:
+    build: ./seguridad
+    depends_on:
+      - rabbitmq
+
+  consumer:
+    build: ./consumer
+    volumes:
+      - ./data:/app/data  # Para guardar los archivos CSV generados por el consumer
+    depends_on:
+      - rabbitmq

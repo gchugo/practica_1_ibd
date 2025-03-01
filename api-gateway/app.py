@@ -22,29 +22,29 @@ def send_to_rabbitmq(queue: str, data: dict):
     connection.close()
 
 # Endpoints para recibir los datos de los sensores y enviar a RabbitMQ
-@app.route("/api/temperature", methods=["POST"])
+@app.route("/api/temperatura", methods=["POST"])
 def receive_temperature_data():
     data = request.json
     send_to_rabbitmq('sensor_temperature', data)
     return jsonify({"message": "Temperature data received"}), 200
 
-@app.route("/api/occupancy", methods=["POST"])
+@app.route("/api/ocupacion", methods=["POST"])
 def receive_occupancy_data():
     data = request.json
     send_to_rabbitmq('sensor_occupancy', data)
     return jsonify({"message": "Occupancy data received"}), 200
 
-@app.route("/api/energy", methods=["POST"])
+@app.route("/api/electricidad", methods=["POST"])
 def receive_energy_data():
     data = request.json
     send_to_rabbitmq('sensor_energy', data)
     return jsonify({"message": "Energy data received"}), 200
 
-@app.route("/api/security", methods=["POST"])
+@app.route("/api/seguridad", methods=["POST"])
 def receive_security_data():
     data = request.json
     send_to_rabbitmq('sensor_security', data)
     return jsonify({"message": "Security data received"}), 200
 
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=5000)
+    app.run(debug=True, host="0.0.0.0", port=5012)
