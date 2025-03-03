@@ -1,25 +1,38 @@
 from flask import Flask, request, jsonify
 import pika
 import json
+import os
+import time
 
-# Configuración de RabbitMQ
-RABBITMQ_HOST = 'RABBITMQ_HOST'
+time.sleep(10)  # Espera para que RabbitMQ esté completamente listo
+
+# Configuración de RabbitMQ (usando credenciales de las variables de entorno)
+RABBITMQ_HOST = os.getenv('RABBITMQ_HOST', 'rabbitmq')
+RABBITMQ_USER = os.getenv('RABBITMQ_USER', 'guest')  # Valor por defecto 'guest'
+RABBITMQ_PASSWORD = os.getenv('RABBITMQ_PASSWORD', 'guest')  # Valor por defecto 'guest'
 
 # Crear la instancia de Flask
 app = Flask(__name__)
 
+# Establecer la conexión a RabbitMQ fuera de la función
+credentials = pika.PlainCredentials(RABBITMQ_USER, RABBITMQ_PASSWORD)
+connection = pika.BlockingConnection(pika.ConnectionParameters(host=RABBITMQ_HOST, credentials=credentials))
+channel = connection.channel()
+
+# Asegurarse de que las colas estén declaradas
+channel.queue_declare(queue='sensor_temperature', durable=True)
+channel.queue_declare(queue='sensor_occupancy', durable=True)
+channel.queue_declare(queue='sensor_energy', durable=True)
+channel.queue_declare(queue='sensor_security', durable=True)
+
 # Función para enviar los datos a RabbitMQ
 def send_to_rabbitmq(queue: str, data: dict):
-    connection = pika.BlockingConnection(pika.ConnectionParameters(host=RABBITMQ_HOST))
-    channel = connection.channel()
-    channel.queue_declare(queue=queue, durable=True)
     channel.basic_publish(
         exchange='',
         routing_key=queue,
         body=json.dumps(data),
         properties=pika.BasicProperties(delivery_mode=2)  # Make message persistent
     )
-    connection.close()
 
 # Endpoints para recibir los datos de los sensores y enviar a RabbitMQ
 @app.route("/api/temperature", methods=["POST"])
@@ -47,4 +60,4 @@ def receive_security_data():
     return jsonify({"message": "Security data received"}), 200
 
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=5000)
+    app.run(debug=True, host="0.0.0.0", port=5001)

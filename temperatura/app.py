@@ -2,9 +2,7 @@ import random
 import time
 import json
 import requests
-
-# URL de la API a la que se enviarán los datos
-API_URL = "http://localhost:5000/sensor-data"  # Cambia esta URL a la de tu API
+import os
 
 # Función para generar datos aleatorios de un sensor de temperatura/humedad
 def generate_temp_humidity_data(sensor_id):
@@ -17,13 +15,15 @@ def generate_temp_humidity_data(sensor_id):
     return data
 
 # Simula los datos de un sensor de temperatura/humedad y los envía a la API
-def simulate_temp_humidity_sensor(sensor_id):
+def simulate_temp_humidity_sensor(api_url):
+    sensor_id = os.getenv('HOSTNAME', 'default_sensor')  # Obtener el nombre del contenedor desde el entorno
     while True:
         data = generate_temp_humidity_data(sensor_id)
+        print('Datos generados por el sensor de temperatura y humedad: ', data)
         try:
-            response = requests.post(API_URL, json=data)
+            response = requests.post(api_url, json=data)
             if response.status_code == 200:
-                print(f"Datos enviados correctamente: {json.dumps(data)}")
+                print(f"Data sent successfully for sensor {sensor_id}: {data}")
             else:
                 print(f"Error al enviar datos: {response.status_code} - {response.text}")
         except requests.exceptions.RequestException as e:
@@ -31,4 +31,5 @@ def simulate_temp_humidity_sensor(sensor_id):
         time.sleep(30)  # Espera 30 segundos antes de generar los próximos datos
 
 if __name__ == "__main__":
-    simulate_temp_humidity_sensor(sensor_id=1)
+    api_url = "http://api-gateway:5001/api/temperature"  # Usar el nombre del servicio 'api-gateway'
+    simulate_temp_humidity_sensor(api_url=api_url)

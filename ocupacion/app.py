@@ -2,9 +2,7 @@ import random
 import time
 import json
 import requests
-
-# URL de la API a la que se enviarán los datos
-API_URL = "http://localhost:5000/sensor-data"  # Cambia esta URL a la de tu API
+import os
 
 # Función para generar datos aleatorios de un sensor de ocupación
 def generate_occupancy_data(sensor_id):
@@ -18,13 +16,14 @@ def generate_occupancy_data(sensor_id):
     return data
 
 # Simula los datos de un sensor de ocupación y los envía a la API
-def simulate_occupancy_sensor(sensor_id):
+def simulate_occupancy_sensor(api_url):
+    sensor_id = os.getenv('HOSTNAME', 'default_sensor')  # Obtener el nombre del contenedor desde el entorno
     while True:
         data = generate_occupancy_data(sensor_id)
         try:
-            response = requests.post(API_URL, json=data)
+            response = requests.post(api_url, json=data)
             if response.status_code == 200:
-                print(f"Datos enviados correctamente: {json.dumps(data)}")
+                print(f"Data sent successfully for sensor {sensor_id}: {data}")
             else:
                 print(f"Error al enviar datos: {response.status_code} - {response.text}")
         except requests.exceptions.RequestException as e:
@@ -32,4 +31,5 @@ def simulate_occupancy_sensor(sensor_id):
         time.sleep(60)  # Espera 1 minuto antes de generar los próximos datos
 
 if __name__ == "__main__":
-    simulate_occupancy_sensor(sensor_id=1)
+    api_url = "http://api-gateway:5001/api/occupancy"  # Usar el nombre del servicio 'api-gateway'
+    simulate_occupancy_sensor(api_url=api_url)

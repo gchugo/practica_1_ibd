@@ -1,0 +1,90 @@
+version: '3.8'
+
+services:
+  # API Gateway
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    ports:
+      - "5001:5001"  # Mapeo correcto del puerto
+    environment:
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_USER=myuser        # Usuario de RabbitMQ
+      - RABBITMQ_PASSWORD=mypassword # Contraseña de RabbitMQ
+    depends_on:
+      - consumer
+      - electricidad
+      - ocupacion
+      - seguridad
+      - temperatura
+    networks:
+      - app-network
+
+  # Consumer
+  consumer:
+    environment:
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_USER=myuser       # Usuario de RabbitMQ
+      - RABBITMQ_PASSWORD=mypassword # Contraseña de RabbitMQ
+    build:
+      context: ./consumer
+      dockerfile: Dockerfile
+    depends_on:
+      - rabbitmq  # Asegurarse de que RabbitMQ esté disponible antes de iniciar el consumer
+      - electricidad
+      - ocupacion
+      - seguridad
+      - temperatura
+    volumes:
+      - consumer_data:/app/data  # Monta el volumen para los datos CSV
+    networks:
+      - app-network
+
+  # RabbitMQ
+  rabbitmq:
+    image: rabbitmq:latest
+    environment:
+      RABBITMQ_DEFAULT_USER: myuser        # Usuario por defecto de RabbitMQ
+      RABBITMQ_DEFAULT_PASS: mypassword    # Contraseña por defecto de RabbitMQ
+    ports:
+      - "5672:5672"  # Puerto de conexión para los clientes RabbitMQ
+      - "15672:15672" # Puerto para la interfaz web de RabbitMQ (Opcional)
+    networks:
+      - app-network
+
+  # Otros servicios como electricidad, ocupación, seguridad, temperatura
+  electricidad:
+    build: ./electricidad
+    deploy:
+      replicas: 1
+    networks:
+      - app-network
+
+  ocupacion:
+    build: ./ocupacion
+    deploy:
+      replicas: 1
+    networks:
+      - app-network
+
+  seguridad:
+    build: ./seguridad
+    deploy:
+      replicas: 1
+    networks:
+      - app-network
+
+  temperatura:
+    build: ./temperatura
+    deploy:
+      replicas: 1
+    networks:
+      - app-network
+
+volumes:
+  consumer_data:
+
+networks:
+  app-network:
+    driver: bridge

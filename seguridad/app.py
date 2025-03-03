@@ -2,12 +2,10 @@ import random
 import time
 import json
 import requests
-
-# URL de la API a la que se enviarán los datos
-API_URL = "http://localhost:5000/sensor-data"  # Cambia esta URL a la de tu API
+import os
 
 # Función para generar datos aleatorios de una cámara de seguridad
-def generate_camera_data(camera_id):
+def generate_camera_data(sensor_id):
     status = random.choice(["active", "inactive"])  # Estado de la cámara (activo/inactivo)
     alert_event = random.choice([
         "motion detected", 
@@ -22,7 +20,7 @@ def generate_camera_data(camera_id):
         alert_level = "none"
     
     data = {
-        "camera_id": camera_id,
+        "sensor_id": sensor_id,
         "status": status,
         "alert_event": alert_event if status == "active" else "camera inactive",  # Solo alertas si está activa
         "alert_level": alert_level if status == "active" else "none"
@@ -30,13 +28,14 @@ def generate_camera_data(camera_id):
     return data
 
 # Simula los datos de una cámara de seguridad y los envía a la API
-def simulate_security_camera(camera_id):
+def simulate_security_camera(api_url):
+    sensor_id = os.getenv('HOSTNAME', 'default_sensor')  # Obtener el nombre del contenedor desde el entorno
     while True:
-        data = generate_camera_data(camera_id)
+        data = generate_camera_data(sensor_id)
         try:
-            response = requests.post(API_URL, json=data)
+            response = requests.post(api_url, json=data)
             if response.status_code == 200:
-                print(f"Datos enviados correctamente: {json.dumps(data)}")
+                print(f"Data sent successfully for sensor {sensor_id}: {data}")
             else:
                 print(f"Error al enviar datos: {response.status_code} - {response.text}")
         except requests.exceptions.RequestException as e:
@@ -44,4 +43,5 @@ def simulate_security_camera(camera_id):
         time.sleep(120)  # Espera 2 minutos (120 segundos) antes de generar los próximos datos
 
 if __name__ == "__main__":
-    simulate_security_camera(camera_id=1)
+    api_url = "http://api-gateway:5001/api/security"  # Usar el nombre del servicio 'api-gateway'
+    simulate_security_camera(api_url=api_url)
