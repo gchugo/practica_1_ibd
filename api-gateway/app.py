@@ -19,17 +19,16 @@ credentials = pika.PlainCredentials(RABBITMQ_USER, RABBITMQ_PASSWORD)
 connection = pika.BlockingConnection(pika.ConnectionParameters(host=RABBITMQ_HOST, credentials=credentials))
 channel = connection.channel()
 
-# Asegurarse de que las colas estén declaradas
-channel.queue_declare(queue='sensor_temperature', durable=True)
-channel.queue_declare(queue='sensor_occupancy', durable=True)
-channel.queue_declare(queue='sensor_energy', durable=True)
-channel.queue_declare(queue='sensor_security', durable=True)
+# Asegurarse de que haya solo una cola común para todos los sensores
+channel.queue_declare(queue='sensor_data', durable=True)
 
 # Función para enviar los datos a RabbitMQ
-def send_to_rabbitmq(queue: str, data: dict):
+def send_to_rabbitmq(sensor_type: str, data: dict):
+    # Añadir el tipo de sensor a los datos
+    data['sensor_type'] = sensor_type
     channel.basic_publish(
         exchange='',
-        routing_key=queue,
+        routing_key='sensor_data',  # Usamos la única cola
         body=json.dumps(data),
         properties=pika.BasicProperties(delivery_mode=2)  # Make message persistent
     )

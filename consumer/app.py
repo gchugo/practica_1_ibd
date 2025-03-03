@@ -36,15 +36,15 @@ def open_csv(sensor_type):
 # Función para consumir mensajes desde RabbitMQ y escribir en CSV
 def callback(ch, method, properties, body):
     data = json.loads(body)
-    queue_name = method.routing_key  # Nombre de la cola (sensor)
+    sensor_type = data.get('sensor_type', 'unknown')  # Obtener el tipo de sensor desde los datos
 
     # Abrir el archivo CSV correspondiente al sensor si no está abierto
-    open_csv(queue_name)
+    open_csv(sensor_type)
     
-    print(f"Received data from {queue_name}: {data}")
+    print(f"Received data from {sensor_type}: {data}")
     
     # Escribir los datos en el archivo CSV del sensor
-    csv_writers[queue_name].writerow([json.dumps(data)])  # Almacena los datos como JSON o extrae campos específicos
+    csv_writers[sensor_type].writerow([json.dumps(data)])  # Almacena los datos como JSON o extrae campos específicos
 
 # Configurar conexión a RabbitMQ
 def consume_from_rabbitmq():
@@ -59,17 +59,11 @@ def consume_from_rabbitmq():
         )
         channel = connection.channel()
 
-        # Declarar las colas que se van a escuchar
-        channel.queue_declare(queue='sensor_temperature', durable=True)
-        channel.queue_declare(queue='sensor_occupancy', durable=True)
-        channel.queue_declare(queue='sensor_energy', durable=True)
-        channel.queue_declare(queue='sensor_security', durable=True)
+        # Declarar solo una cola común para todos los sensores
+        channel.queue_declare(queue='sensor_data', durable=True)
 
-        # Consumir de cada cola (auto_ack=True para reconocimiento automático)
-        channel.basic_consume(queue='sensor_temperature', on_message_callback=callback, auto_ack=True)
-        channel.basic_consume(queue='sensor_occupancy', on_message_callback=callback, auto_ack=True)
-        channel.basic_consume(queue='sensor_energy', on_message_callback=callback, auto_ack=True)
-        channel.basic_consume(queue='sensor_security', on_message_callback=callback, auto_ack=True)
+        # Consumir mensajes de la cola común
+        channel.basic_consume(queue='sensor_data', on_message_callback=callback, auto_ack=True)
 
         print('Waiting for messages. To exit press CTRL+C')
         channel.start_consuming()
