@@ -4,7 +4,7 @@ import json
 import os
 import time
 
-time.sleep(10)  # Espera para que RabbitMQ esté completamente listo
+time.sleep(5)  # Espera para que RabbitMQ esté completamente listo
 
 # Configuración de RabbitMQ (usando credenciales de las variables de entorno)
 RABBITMQ_HOST = os.getenv('RABBITMQ_HOST', 'rabbitmq')

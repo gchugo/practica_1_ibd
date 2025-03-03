@@ -4,7 +4,7 @@ import json
 import os
 import time
 
-time.sleep(10)  # Espera para que RabbitMQ esté completamente listo
+time.sleep(10)
 
 # Configuración de RabbitMQ a partir de las variables de entorno
 RABBITMQ_HOST = os.getenv('RABBITMQ_HOST', 'rabbitmq')
@@ -45,9 +45,6 @@ def callback(ch, method, properties, body):
     
     # Escribir los datos en el archivo CSV del sensor
     csv_writers[queue_name].writerow([json.dumps(data)])  # Almacena los datos como JSON o extrae campos específicos
-    
-    # Confirmar que el mensaje ha sido procesado
-    ch.basic_ack(delivery_tag=method.delivery_tag)
 
 # Configurar conexión a RabbitMQ
 def consume_from_rabbitmq():
@@ -68,11 +65,11 @@ def consume_from_rabbitmq():
         channel.queue_declare(queue='sensor_energy', durable=True)
         channel.queue_declare(queue='sensor_security', durable=True)
 
-        # Consumir de cada cola
-        channel.basic_consume(queue='sensor_temperature', on_message_callback=callback, auto_ack=False)
-        channel.basic_consume(queue='sensor_occupancy', on_message_callback=callback, auto_ack=False)
-        channel.basic_consume(queue='sensor_energy', on_message_callback=callback, auto_ack=False)
-        channel.basic_consume(queue='sensor_security', on_message_callback=callback, auto_ack=False)
+        # Consumir de cada cola (auto_ack=True para reconocimiento automático)
+        channel.basic_consume(queue='sensor_temperature', on_message_callback=callback, auto_ack=True)
+        channel.basic_consume(queue='sensor_occupancy', on_message_callback=callback, auto_ack=True)
+        channel.basic_consume(queue='sensor_energy', on_message_callback=callback, auto_ack=True)
+        channel.basic_consume(queue='sensor_security', on_message_callback=callback, auto_ack=True)
 
         print('Waiting for messages. To exit press CTRL+C')
         channel.start_consuming()
