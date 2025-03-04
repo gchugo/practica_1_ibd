@@ -1,89 +1,99 @@
 import pika
-import csv
 import json
+import csv
 import os
-import time
 
-time.sleep(10)
-
-# Configuración de RabbitMQ a partir de las variables de entorno
+# Configuración de RabbitMQ (utilizando las mismas credenciales que en la API)
 RABBITMQ_HOST = os.getenv('RABBITMQ_HOST', 'rabbitmq')
-RABBITMQ_USER = os.getenv('RABBITMQ_USER', 'guest')  # Valor por defecto 'guest'
-RABBITMQ_PASSWORD = os.getenv('RABBITMQ_PASSWORD', 'guest')  # Valor por defecto 'guest'
+RABBITMQ_USER = os.getenv('RABBITMQ_USER', 'guest')
+RABBITMQ_PASSWORD = os.getenv('RABBITMQ_PASSWORD', 'guest')
 
-# Diccionario para mantener referencias a los archivos CSV abiertos
-csv_files = {}
-csv_writers = {}
+# Directorio donde se guardarán los archivos CSV
+CSV_DIRECTORY = '/app/data'  # Asegúrate de que este volumen se mapea correctamente
 
-# Función para abrir el archivo CSV de un sensor si no está abierto
-def open_csv(sensor_type):
-    if sensor_type not in csv_files:
-        # Ruta donde se guardarán los archivos CSV
-        file_path = f'/app/data/{sensor_type}_data.csv'  # Ruta dentro del contenedor, accesible mediante volumen
+# Crear directorio si no existe
+if not os.path.exists(CSV_DIRECTORY):
+    os.makedirs(CSV_DIRECTORY)
 
-        # Abrir o crear un nuevo archivo CSV para el sensor
-        csv_file = open(file_path, mode='a', newline='', encoding='utf-8')
-        csv_writer = csv.writer(csv_file)
-        
-        # Escribir el encabezado si el archivo está vacío
-        if csv_file.tell() == 0:
-            csv_writer.writerow(['data'])  # Escribe la cabecera para los datos recibidos
-        
-        # Guardar las referencias al archivo y al writer
-        csv_files[sensor_type] = csv_file
-        csv_writers[sensor_type] = csv_writer
-
-# Función para consumir mensajes desde RabbitMQ y escribir en CSV
-def callback(ch, method, properties, body):
-    data = json.loads(body)
-    queue_name = method.routing_key  # Nombre de la cola (sensor)
-
-    # Abrir el archivo CSV correspondiente al sensor si no está abierto
-    open_csv(queue_name)
-    
-    print(f"Received data from {queue_name}: {data}")
-    
-    # Escribir los datos en el archivo CSV del sensor
-    csv_writers[queue_name].writerow([json.dumps(data)])  # Almacena los datos como JSON o extrae campos específicos
-
-# Configurar conexión a RabbitMQ
-def consume_from_rabbitmq():
+# Función para establecer la conexión a RabbitMQ
+def create_rabbitmq_connection():
     try:
-        # Conexión utilizando las credenciales configuradas
         credentials = pika.PlainCredentials(RABBITMQ_USER, RABBITMQ_PASSWORD)
-        connection = pika.BlockingConnection(
-            pika.ConnectionParameters(
-                host=RABBITMQ_HOST,
-                credentials=credentials
-            )
-        )
+        connection = pika.BlockingConnection(pika.ConnectionParameters(host=RABBITMQ_HOST, credentials=credentials))
         channel = connection.channel()
-
-        # Declarar las colas que se van a escuchar
-        channel.queue_declare(queue='sensor_temperature', durable=True)
-        channel.queue_declare(queue='sensor_occupancy', durable=True)
-        channel.queue_declare(queue='sensor_energy', durable=True)
-        channel.queue_declare(queue='sensor_security', durable=True)
-
-        # Consumir de cada cola (auto_ack=True para reconocimiento automático)
-        channel.basic_consume(queue='sensor_temperature', on_message_callback=callback, auto_ack=True)
-        channel.basic_consume(queue='sensor_occupancy', on_message_callback=callback, auto_ack=True)
-        channel.basic_consume(queue='sensor_energy', on_message_callback=callback, auto_ack=True)
-        channel.basic_consume(queue='sensor_security', on_message_callback=callback, auto_ack=True)
-
-        print('Waiting for messages. To exit press CTRL+C')
-        channel.start_consuming()
+        return connection, channel
     except pika.exceptions.AMQPConnectionError as e:
         print(f"Error de conexión a RabbitMQ: {e}")
-    except Exception as e:
-        print(f"Error inesperado: {e}")
+        return None, None
 
-if __name__ == "__main__":
-    try:
-        consume_from_rabbitmq()
-    except KeyboardInterrupt:
-        print("Stopped by user")
-    finally:
-        # Cerrar todos los archivos CSV abiertos
-        for csv_file in csv_files.values():
-            csv_file.close()
+# Función para escribir los datos en un archivo CSV
+def write_to_csv(sensor_type, data):
+    file_path = f'{CSV_DIRECTORY}/{sensor_type}_data.csv'  # Formato de la ruta del archivo CSV
+    
+    # Si el archivo no existe, lo crea y escribe el encabezado
+    file_exists = os.path.exists(file_path)
+    
+    with open(file_path, mode='a', newline='') as file:
+        writer = csv.DictWriter(file, fieldnames=data.keys())
+        
+        if not file_exists:
+            writer.writeheader()  # Escribir encabezado solo si el archivo es nuevo
+        writer.writerow(data)
+
+# Función que será llamada cuando se reciba un mensaje
+def callback_temperature(ch, method, properties, body):
+    data = json.loads(body)
+    print(f"Recibido mensaje en la cola sensor_temperature: {data}")
+    write_to_csv('temperature', data)
+    ch.basic_ack(delivery_tag=method.delivery_tag)
+
+def callback_occupancy(ch, method, properties, body):
+    data = json.loads(body)
+    print(f"Recibido mensaje en la cola sensor_occupancy: {data}")
+    write_to_csv('occupancy', data)
+    ch.basic_ack(delivery_tag=method.delivery_tag)
+
+def callback_energy(ch, method, properties, body):
+    data = json.loads(body)
+    print(f"Recibido mensaje en la cola sensor_energy: {data}")
+    write_to_csv('energy', data)
+    ch.basic_ack(delivery_tag=method.delivery_tag)
+
+def callback_security(ch, method, properties, body):
+    data = json.loads(body)
+    print(f"Recibido mensaje en la cola sensor_security: {data}")
+    write_to_csv('security', data)
+    ch.basic_ack(delivery_tag=method.delivery_tag)
+
+# Crear conexión y canal de RabbitMQ
+connection, channel = create_rabbitmq_connection()
+
+# Asegúrate de que la conexión se haya realizado correctamente
+if not connection or not channel:
+    print("No se pudo establecer la conexión con RabbitMQ. El servidor podría estar inalcanzable.")
+    exit(1)
+
+# Declarar las colas (en caso de que no existan)
+channel.queue_declare(queue='sensor_temperature', durable=True)
+channel.queue_declare(queue='sensor_occupancy', durable=True)
+channel.queue_declare(queue='sensor_energy', durable=True)
+channel.queue_declare(queue='sensor_security', durable=True)
+
+# Configurar los consumidores para cada cola con sus respectivos callbacks
+channel.basic_consume(queue='sensor_temperature', on_message_callback=callback_temperature)
+channel.basic_consume(queue='sensor_occupancy', on_message_callback=callback_occupancy)
+channel.basic_consume(queue='sensor_energy', on_message_callback=callback_energy)
+channel.basic_consume(queue='sensor_security', on_message_callback=callback_security)
+
+print("Esperando mensajes. Para salir, presiona Ctrl+C.")
+try:
+    channel.start_consuming()
+except KeyboardInterrupt:
+    print("El consumidor se detuvo por el usuario.")
+finally:
+    if connection and channel:
+        try:
+            channel.close()
+            connection.close()
+        except Exception as e:
+            print(f"Error al cerrar la conexión a RabbitMQ: {e}")
