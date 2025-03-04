@@ -45,7 +45,7 @@ services:
   electricidad:
     build: ./electricidad
     deploy:
-      replicas: 1
+      replicas: 7
     depends_on:
       - api-gateway
     networks:
@@ -54,7 +54,7 @@ services:
   ocupacion:
     build: ./ocupacion
     deploy:
-      replicas: 1
+      replicas: 6
     depends_on:
       - api-gateway
     networks:
@@ -63,7 +63,7 @@ services:
   seguridad:
     build: ./seguridad
     deploy:
-      replicas: 1
+      replicas: 3
     depends_on:
       - api-gateway
     networks:
@@ -72,7 +72,7 @@ services:
   temperatura:
     build: ./temperatura
     deploy:
-      replicas: 1
+      replicas: 4
     depends_on:
       - api-gateway
     networks:
