@@ -1,8 +1,14 @@
 import random
 import time
-import json
 import requests
 import os
+import logging
+
+time.sleep(10)
+
+# Configuración de logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger()
 
 # Función para generar datos aleatorios de un sensor de ocupación
 def generate_occupancy_data(sensor_id):
@@ -23,11 +29,11 @@ def simulate_occupancy_sensor(api_url):
         try:
             response = requests.post(api_url, json=data)
             if response.status_code == 200:
-                print(f"Data sent successfully for sensor {sensor_id}: {data}")
+                logger.info(f"Data sent successfully for sensor {sensor_id}: {data}")
             else:
-                print(f"Error al enviar datos: {response.status_code} - {response.text}")
+                logger.error(f"Error al enviar datos: {response.status_code} - {response.text}")
         except requests.exceptions.RequestException as e:
-            print(f"Error de conexión: {e}")
+            logger.error(f"Error de conexión: {e}")
         time.sleep(60)  # Espera 1 minuto antes de generar los próximos datos
 
 if __name__ == "__main__":

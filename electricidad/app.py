@@ -1,8 +1,14 @@
 import random
 import time
-import json
 import requests
 import os
+import logging
+
+time.sleep(10)
+
+# Configuración del logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
 # Función para generar datos aleatorios de un medidor de consumo de energía
 def generate_power_data(sensor_id):
@@ -25,12 +31,12 @@ def simulate_single_power_meter(api_url):
         try:
             response = requests.post(api_url, json=data)
             if response.status_code == 200:
-                print(f"Data sent successfully for sensor {sensor_id}: {data}")
+                logger.info(f"Data sent successfully for sensor {sensor_id}: {data}")
             else:
-                print(f"Failed to send data for sensor {sensor_id}. Status code: {response.status_code}")
+                logger.warning(f"Failed to send data for sensor {sensor_id}. Status code: {response.status_code}")
         
         except Exception as e:
-            print(f"Error sending data: {str(e)}")
+            logger.error(f"Error sending data for sensor {sensor_id}: {str(e)}")
         
         time.sleep(5)  # Espera 5 segundos antes de generar los próximos datos
 

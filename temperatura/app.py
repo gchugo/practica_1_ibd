@@ -3,6 +3,13 @@ import time
 import json
 import requests
 import os
+import logging
+
+time.sleep(10)
+
+# Configuración de logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger()
 
 # Función para generar datos aleatorios de un sensor de temperatura/humedad
 def generate_temp_humidity_data(sensor_id):
@@ -19,15 +26,14 @@ def simulate_temp_humidity_sensor(api_url):
     sensor_id = os.getenv('HOSTNAME', 'default_sensor')  # Obtener el nombre del contenedor desde el entorno
     while True:
         data = generate_temp_humidity_data(sensor_id)
-        print('Datos generados por el sensor de temperatura y humedad: ', data)
         try:
             response = requests.post(api_url, json=data)
             if response.status_code == 200:
-                print(f"Data sent successfully for sensor {sensor_id}: {data}")
+                logger.info(f"Data sent successfully for sensor {sensor_id}: {data}")
             else:
-                print(f"Error al enviar datos: {response.status_code} - {response.text}")
+                logger.error(f"Error al enviar datos: {response.status_code} - {response.text}")
         except requests.exceptions.RequestException as e:
-            print(f"Error de conexión: {e}")
+            logger.error(f"Error de conexión: {e}")
         time.sleep(30)  # Espera 30 segundos antes de generar los próximos datos
 
 if __name__ == "__main__":
