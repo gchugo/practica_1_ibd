@@ -6,7 +6,8 @@ import time
 import logging
 
 # Configuración del logging
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.getLogger('pika').setLevel(logging.WARNING)  # Solo los warnings y errores de pika se verán
 logger = logging.getLogger(__name__)
 
 time.sleep(10)  # Espera para que RabbitMQ esté completamente listo
@@ -48,7 +49,6 @@ if not connection or not channel:
 # Función para enviar los datos a RabbitMQ
 def send_to_rabbitmq(queue: str, data: dict):
     try:
-        logger.info(f"Enviando datos a la cola {queue}...")
         channel.basic_publish(
             exchange='',
             routing_key=queue,
@@ -107,7 +107,7 @@ def receive_security_data():
 if __name__ == "__main__":
     try:
         logger.info("Iniciando el servidor Flask...")
-        app.run(debug=True, host="0.0.0.0", port=5001)
+        app.run(debug=False, host="0.0.0.0", port=5001)  # Desactivamos el debug
     except KeyboardInterrupt:
         logger.info("Servidor detenido por el usuario.")
     finally:
