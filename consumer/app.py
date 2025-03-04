@@ -2,6 +2,15 @@ import pika
 import json
 import csv
 import os
+import time
+import logging
+
+# Configuración de logging para capturar los eventos
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+logging.getLogger('pika').setLevel(logging.WARNING)
+
+time.sleep(10)
 
 # Configuración de RabbitMQ (utilizando las mismas credenciales que en la API)
 RABBITMQ_HOST = os.getenv('RABBITMQ_HOST', 'rabbitmq')
@@ -15,16 +24,21 @@ CSV_DIRECTORY = '/app/data'  # Asegúrate de que este volumen se mapea correctam
 if not os.path.exists(CSV_DIRECTORY):
     os.makedirs(CSV_DIRECTORY)
 
-# Función para establecer la conexión a RabbitMQ
+# Función para establecer la conexión a RabbitMQ con reintentos
 def create_rabbitmq_connection():
-    try:
-        credentials = pika.PlainCredentials(RABBITMQ_USER, RABBITMQ_PASSWORD)
-        connection = pika.BlockingConnection(pika.ConnectionParameters(host=RABBITMQ_HOST, credentials=credentials))
-        channel = connection.channel()
-        return connection, channel
-    except pika.exceptions.AMQPConnectionError as e:
-        print(f"Error de conexión a RabbitMQ: {e}")
-        return None, None
+    retries = 5  # Número de intentos
+    for attempt in range(retries):
+        try:
+            credentials = pika.PlainCredentials(RABBITMQ_USER, RABBITMQ_PASSWORD)
+            connection = pika.BlockingConnection(pika.ConnectionParameters(host=RABBITMQ_HOST, credentials=credentials))
+            channel = connection.channel()
+            logger.info("Conexión a RabbitMQ establecida exitosamente.")
+            return connection, channel
+        except pika.exceptions.AMQPConnectionError as e:
+            logger.error(f"Error de conexión a RabbitMQ (intento {attempt + 1}/{retries}): {e}")
+            time.sleep(5)  # Espera 5 segundos antes de intentar de nuevo
+    logger.critical("No se pudo establecer la conexión con RabbitMQ después de varios intentos.")
+    return None, None
 
 # Función para escribir los datos en un archivo CSV
 def write_to_csv(sensor_type, data):
@@ -43,25 +57,25 @@ def write_to_csv(sensor_type, data):
 # Función que será llamada cuando se reciba un mensaje
 def callback_temperature(ch, method, properties, body):
     data = json.loads(body)
-    print(f"Recibido mensaje en la cola sensor_temperature: {data}")
+    logger.info(f"Recibido mensaje en la cola sensor_temperature: {data}")
     write_to_csv('temperature', data)
     ch.basic_ack(delivery_tag=method.delivery_tag)
 
 def callback_occupancy(ch, method, properties, body):
     data = json.loads(body)
-    print(f"Recibido mensaje en la cola sensor_occupancy: {data}")
+    logger.info(f"Recibido mensaje en la cola sensor_occupancy: {data}")
     write_to_csv('occupancy', data)
     ch.basic_ack(delivery_tag=method.delivery_tag)
 
 def callback_energy(ch, method, properties, body):
     data = json.loads(body)
-    print(f"Recibido mensaje en la cola sensor_energy: {data}")
+    logger.info(f"Recibido mensaje en la cola sensor_energy: {data}")
     write_to_csv('energy', data)
     ch.basic_ack(delivery_tag=method.delivery_tag)
 
 def callback_security(ch, method, properties, body):
     data = json.loads(body)
-    print(f"Recibido mensaje en la cola sensor_security: {data}")
+    logger.info(f"Recibido mensaje en la cola sensor_security: {data}")
     write_to_csv('security', data)
     ch.basic_ack(delivery_tag=method.delivery_tag)
 
@@ -70,7 +84,7 @@ connection, channel = create_rabbitmq_connection()
 
 # Asegúrate de que la conexión se haya realizado correctamente
 if not connection or not channel:
-    print("No se pudo establecer la conexión con RabbitMQ. El servidor podría estar inalcanzable.")
+    logger.critical("No se pudo establecer la conexión con RabbitMQ. El servidor podría estar inalcanzable.")
     exit(1)
 
 # Declarar las colas (en caso de que no existan)
@@ -85,15 +99,15 @@ channel.basic_consume(queue='sensor_occupancy', on_message_callback=callback_occ
 channel.basic_consume(queue='sensor_energy', on_message_callback=callback_energy)
 channel.basic_consume(queue='sensor_security', on_message_callback=callback_security)
 
-print("Esperando mensajes. Para salir, presiona Ctrl+C.")
 try:
     channel.start_consuming()
 except KeyboardInterrupt:
-    print("El consumidor se detuvo por el usuario.")
+    logger.info("El consumidor se detuvo por el usuario.")
 finally:
     if connection and channel:
         try:
             channel.close()
             connection.close()
+            logger.info("Conexión a RabbitMQ cerrada.")
         except Exception as e:
-            print(f"Error al cerrar la conexión a RabbitMQ: {e}")
+            logger.error(f"Error al cerrar la conexión a RabbitMQ: {e}")
