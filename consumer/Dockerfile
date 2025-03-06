@@ -1,4 +1,4 @@
-# Dockerfile para el Consumer
+# Dockerfile para Consumer
 FROM python:3.9-slim
 
 WORKDIR /app
