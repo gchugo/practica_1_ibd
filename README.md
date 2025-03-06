@@ -39,11 +39,11 @@ El sistema monitorea el edificio usando los siguientes tipos de sensores:
   - Nivel de alerta (bajo, medio, alto)
 - **Frecuencia**: cada 2 minutos para estados y alertas
 - **Volumen**: 3 cámaras en puntos estratégicos
-🔌 API Overview
+## 🔌 API Overview
 
 La API es responsable de recibir datos de sensores y enviarlos a un sistema de mensajería (RabbitMQ) para su procesamiento asíncrono, asegurando una infraestructura robusta para la gestión de información en tiempo real.
 
-🛠️ Endpoints disponibles
+### 🛠️ Endpoints disponibles
 
 La API ofrece varios endpoints para recibir los datos de diferentes sensores del sistema:
 
@@ -65,11 +65,11 @@ La API ofrece varios endpoints para recibir los datos de diferentes sensores del
 
 ⸻
 
-🚀 Funcionamiento General de la API
-	1.	La API recibe datos en formato JSON desde los sensores conectados.
-	2.	Cada tipo de sensor tiene un endpoint dedicado para recibir sus datos específicos.
-	3.	Los datos se envían a RabbitMQ, donde se encolan y se procesan asíncronamente.
-	4.	Gracias a RabbitMQ, los datos se mantienen persistentes, asegurando que no se pierdan incluso si los consumidores no están disponibles inmediatamente.
+### 🚀 Funcionamiento General de la API
+1.	La API recibe datos en formato JSON desde los sensores conectados.
+2.	Cada tipo de sensor tiene un endpoint dedicado para recibir sus datos específicos.
+3.	Los datos se envían a RabbitMQ, donde se encolan y se procesan asíncronamente.
+4.	Gracias a RabbitMQ, los datos se mantienen persistentes, asegurando que no se pierdan incluso si los consumidores no están disponibles inmediatamente.
 
 
 ## 🛠️ Tecnologías utilizadas
