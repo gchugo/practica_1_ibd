@@ -94,7 +94,7 @@ Puedes montar la infraestructura utilizando Docker Compose. Los contenedores nec
 
 ### Despliegue:
    ```bash
-   git clone https://github.com/usuario/repo.git](https://github.com/gchugo/practica_1_ibd.git
+   git clone git@github.com:gchugo/practica_1_ibd.git
    cd practica_1_ibd
    docker compose up
    ```
