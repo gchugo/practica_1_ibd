@@ -23,7 +23,7 @@ def generate_temp_humidity_data(sensor_id):
 
 # Simula los datos de un sensor de temperatura/humedad y los envía a la API
 def simulate_temp_humidity_sensor(api_url):
-    sensor_id = os.getenv('HOSTNAME', 'default_sensor')  # Obtener el nombre del contenedor desde el entorno
+    sensor_id = os.getenv('HOSTNAME', 'default_sensor')
     while True:
         data = generate_temp_humidity_data(sensor_id)
         try:
