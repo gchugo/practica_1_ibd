@@ -48,20 +48,20 @@ La API es responsable de recibir datos de sensores y enviarlos a un sistema de m
 La API ofrece varios endpoints para recibir los datos de diferentes sensores del sistema:
 
 1. 🌡️ /api/temperature (POST)
-	•	Descripción: Recibe datos relacionados con la temperatura ambiental, humedad relativa y calidad del aire.
-	•	Uso: Los datos se envían a la cola sensor_temperature en RabbitMQ para su procesamiento posterior.
+	- Descripción: Recibe datos relacionados con la temperatura ambiental, humedad relativa y calidad del aire.
+	- Uso: Los datos se envían a la cola sensor_temperature en RabbitMQ para su procesamiento posterior.
 
 2. 👥 /api/occupancy (POST)
-	•	Descripción: Recibe información sobre la ocupación de espacios, como detección de movimiento y número de personas en una sala.
-	•	Uso: Los datos son encolados en sensor_occupancy en RabbitMQ para su análisis y acciones futuras.
+	- Descripción: Recibe información sobre la ocupación de espacios, como detección de movimiento y número de personas en una sala.
+	- Uso: Los datos son encolados en sensor_occupancy en RabbitMQ para su análisis y acciones futuras.
 
 3. ⚡ /api/energy (POST)
-	•	Descripción: Recibe datos sobre el consumo de energía, como el consumo en kWh, voltaje, corriente y otros parámetros eléctricos.
-	•	Uso: Los datos se envían a la cola sensor_energy en RabbitMQ, facilitando su monitoreo y análisis energético. Para esta cola, datos se envían en lotes (batch) a RabbitMQ, optimizando así la carga de mensajes y mejorando el rendimiento del sistema debido a que recibe muchos mensajes y la cola se puede saturar.
+   	- Descripción: Recibe datos sobre el consumo de energía, como el consumo en kWh, voltaje, corriente y otros parámetros eléctricos.
+	- Uso: Los datos se envían a la cola sensor_energy en RabbitMQ, facilitando su monitoreo y análisis energético. Para esta cola, los datos se envían en lotes (batch) a RabbitMQ, optimizando así la carga de mensajes y mejorando el rendimiento del sistema debido a que recibe muchos mensajes y la cola se puede saturar.
 
 4. 🔒 /api/security (POST)
-	•	Descripción: Recibe datos de seguridad, como el estado de las cámaras de vigilancia o alertas de movimiento en áreas críticas.
-	•	Uso: La información es enviada a la cola sensor_security en RabbitMQ para permitir una respuesta rápida ante eventos de seguridad.
+	- Descripción: Recibe datos de seguridad, como el estado de las cámaras de vigilancia o alertas de movimiento en áreas críticas.
+	- Uso: La información es enviada a la cola sensor_security en RabbitMQ para permitir una respuesta rápida ante eventos de seguridad.
 
 ⸻
 
