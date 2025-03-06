@@ -15,7 +15,7 @@ RABBITMQ_HOST = os.getenv('RABBITMQ_HOST', 'rabbitmq')
 RABBITMQ_USER = os.getenv('RABBITMQ_USER', 'myuser')
 RABBITMQ_PASSWORD = os.getenv('RABBITMQ_PASSWORD', 'mypassword')
 
-time.sleep(20)  # Esperar a que RabbitMQ esté listo
+time.sleep(20)
 
 # Función para manejar los mensajes de cada sensor y guardarlos en un CSV
 def callback(ch, method, properties, body):
