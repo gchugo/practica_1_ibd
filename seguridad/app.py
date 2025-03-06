@@ -36,7 +36,7 @@ def generate_camera_data(sensor_id):
 
 # Simula los datos de una cámara de seguridad y los envía a la API
 def simulate_security_camera(api_url):
-    sensor_id = os.getenv('HOSTNAME', 'default_sensor')  # Obtener el nombre del contenedor desde el entorno
+    sensor_id = os.getenv('HOSTNAME', 'default_sensor') 
     while True:
         data = generate_camera_data(sensor_id)
         try:
