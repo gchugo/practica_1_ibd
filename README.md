@@ -73,8 +73,11 @@ La API ofrece varios endpoints para recibir los datos de diferentes sensores del
 
 ## 🧩 Conexiones y Consumo de Datos con RabbitMQ
 • La API maneja conexiones a RabbitMQ de forma eficiente mediante la biblioteca pika, asegurando que los datos se envíen y reciban sin pérdida de mensajes, incluso si se presentan interrupciones en la conexión.
+
 • Conexiones establecidas: La API mantiene una conexión activa con RabbitMQ para cada tipo de sensor, utilizando credenciales de entorno definidas para asegurar la comunicación.
+
 • Manejo de reconexiones: En caso de que se cierre una conexión o canal, la API se encarga de reconectar automáticamente, manteniendo la disponibilidad del sistema.
+
 • Cada uno de los sensores tiene su propia conexión, canal y cola de forma que, en el caso de que se produzca algún bloqueo del canal, alguna desconexión por parte del consumidor o se sature la cola, el resto de comunicaciones entre sensores y consumidores seguirá funcionando mientras se trata de recuperar la conexión del elemento caido.
 
 ## 🛠️ Tecnologías utilizadas
