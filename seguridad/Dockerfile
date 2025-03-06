@@ -1,3 +1,4 @@
+# Dockerfile para el sensor de seguridad
 FROM python:3.9-slim
 
 WORKDIR /app
