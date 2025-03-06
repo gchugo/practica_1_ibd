@@ -2,7 +2,7 @@
 
 Este proyecto consiste en una infraestructura de monitoreo de un edificio inteligente a través de sensores conectados que recogen y procesan datos en tiempo real. Los datos son enviados a una API y almacenados en CSVs usando contenedores Docker. Esta infraestructura incluye la integración de **Flask**, **RabbitMQ**, **Pika**, y **Docker**.
 
-## 📊 Sensores integrados
+## Sensores integrados
 
 El sistema monitorea el edificio usando los siguientes tipos de sensores:
 
@@ -39,7 +39,7 @@ El sistema monitorea el edificio usando los siguientes tipos de sensores:
   - Nivel de alerta (bajo, medio, alto)
 - **Frecuencia**: cada 2 minutos para estados y alertas
 - **Volumen**: 3 cámaras en puntos estratégicos
-## 🔌 API Overview
+## API Overview
 
 La API es responsable de recibir datos de sensores y enviarlos a un sistema de mensajería (RabbitMQ) para su procesamiento asíncrono, asegurando una infraestructura robusta para la gestión de información en tiempo real.
 
@@ -65,13 +65,13 @@ La API ofrece varios endpoints para recibir los datos de diferentes sensores del
 
 ⸻
 
-### 🚀 Funcionamiento General de la API
+### Funcionamiento General de la API
 1.	La API recibe datos en formato JSON desde los sensores conectados.
 2.	Cada tipo de sensor tiene un endpoint dedicado para recibir sus datos específicos.
 3.	Los datos se envían a RabbitMQ, donde se encolan y se procesan asíncronamente.
 4.	Gracias a RabbitMQ, los datos se mantienen persistentes, asegurando que no se pierdan incluso si los consumidores no están disponibles inmediatamente.
 
-## 🧩 Conexiones y Consumo de Datos con RabbitMQ
+### Conexiones y Consumo de Datos con RabbitMQ
 • La API maneja conexiones a RabbitMQ de forma eficiente mediante la biblioteca pika, asegurando que los datos se envíen y reciban sin pérdida de mensajes, incluso si se presentan interrupciones en la conexión.
 
 • Conexiones establecidas: La API mantiene una conexión activa con RabbitMQ para cada tipo de sensor, utilizando credenciales de entorno definidas para asegurar la comunicación.
@@ -80,7 +80,7 @@ La API ofrece varios endpoints para recibir los datos de diferentes sensores del
 
 • Cada uno de los sensores tiene su propia conexión, canal y cola de forma que, en el caso de que se produzca algún bloqueo del canal, alguna desconexión por parte del consumidor o se sature la cola, el resto de comunicaciones entre sensores y consumidores seguirá funcionando mientras se trata de recuperar la conexión del elemento caido.
 
-## 🛠️ Tecnologías utilizadas
+## Tecnologías utilizadas
 
 El sistema utiliza las siguientes tecnologías para su infraestructura:
 
@@ -88,7 +88,7 @@ El sistema utiliza las siguientes tecnologías para su infraestructura:
 - **Mensajería y Queues**: [RabbitMQ](https://www.rabbitmq.com/) + [Pika](https://pika.readthedocs.io/en/stable/)
 - **Contenerización y Orquestación**: [Docker](https://www.docker.com/) y [Docker Compose](https://docs.docker.com/compose/)
 
-## 🚀 Montar la infraestructura
+## Montar la infraestructura
 
 Puedes montar la infraestructura utilizando Docker Compose. Los contenedores necesarios, como la API, los sensores, y el consumidor, están disponibles en Docker Hub.
 
