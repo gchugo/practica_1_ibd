@@ -26,7 +26,7 @@ def generate_power_data(sensor_id):
 # Simula los datos de un medidor de consumo de energía y los envía a la API
 def simulate_single_power_meter(api_url):
     # Obtener el nombre del contenedor como sensor_id
-    sensor_id = os.getenv('HOSTNAME', 'default_sensor')  # Obtener el nombre del contenedor desde el entorno
+    sensor_id = os.getenv('HOSTNAME', 'default_sensor')
     while True:
         data = generate_power_data(sensor_id)
         try:
