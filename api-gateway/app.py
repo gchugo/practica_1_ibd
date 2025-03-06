@@ -16,7 +16,7 @@ RABBITMQ_HOST = os.getenv('RABBITMQ_HOST', 'rabbitmq')
 RABBITMQ_USER = os.getenv('RABBITMQ_USER', 'myuser')
 RABBITMQ_PASSWORD = os.getenv('RABBITMQ_PASSWORD', 'mypassword')
 
-time.sleep(10)
+time.sleep(20)
 
 app = Flask(__name__)
 

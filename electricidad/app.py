@@ -5,7 +5,7 @@ import requests
 import os
 import logging
 
-time.sleep(10)
+time.sleep(40)
 
 # Configuración del logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
