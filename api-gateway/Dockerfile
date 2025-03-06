@@ -1,4 +1,4 @@
-# Dockerfile para la API Flask
+# Dockerfile para API Flask
 FROM python:3.9-slim
 
 WORKDIR /app
