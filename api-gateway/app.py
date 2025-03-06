@@ -8,7 +8,7 @@ from collections import deque
 
 # Configuración del logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-logging.getLogger('pika').setLevel(logging.WARNING)  # Reducir logs de Pika
+logging.getLogger('pika').setLevel(logging.WARNING)
 logger = logging.getLogger(__name__)
 
 # Configuración de RabbitMQ (usando credenciales de las variables de entorno)
