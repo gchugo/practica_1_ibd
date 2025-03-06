@@ -31,7 +31,7 @@ services:
 
   # RabbitMQ
   rabbitmq:
-    image: rabbitmq:latest
+    image: rabbitmq:3-management
     environment:
       RABBITMQ_DEFAULT_USER: myuser        # Usuario por defecto de RabbitMQ
       RABBITMQ_DEFAULT_PASS: mypassword    # Contraseña por defecto de RabbitMQ
