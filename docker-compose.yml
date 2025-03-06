@@ -1,27 +1,23 @@
 services:
   # API Gateway
   api-gateway:
-    build:
-      context: ./api-gateway
-      dockerfile: Dockerfile
+    image: gchugo/api-gateway:latest
     ports:
       - "5001:5001"  # Mapeo correcto del puerto
     environment:
       - RABBITMQ_HOST=rabbitmq
-      - RABBITMQ_USER=myuser        # Usuario de RabbitMQ
-      - RABBITMQ_PASSWORD=mypassword # Contraseña de RabbitMQ
+      - RABBITMQ_USER=myuser        
+      - RABBITMQ_PASSWORD=mypassword
     networks:
       - app-network
 
   # Consumer
   consumer:
+    image: gchugo/consumer:latest
     environment:
       - RABBITMQ_HOST=rabbitmq
-      - RABBITMQ_USER=myuser       # Usuario de RabbitMQ
-      - RABBITMQ_PASSWORD=mypassword # Contraseña de RabbitMQ
-    build:
-      context: ./consumer
-      dockerfile: Dockerfile
+      - RABBITMQ_USER=myuser       
+      - RABBITMQ_PASSWORD=mypassword 
     depends_on:
       - rabbitmq  # Asegurarse de que RabbitMQ esté disponible antes de iniciar el consumer
     volumes:
@@ -33,17 +29,17 @@ services:
   rabbitmq:
     image: rabbitmq:3-management
     environment:
-      RABBITMQ_DEFAULT_USER: myuser        # Usuario por defecto de RabbitMQ
-      RABBITMQ_DEFAULT_PASS: mypassword    # Contraseña por defecto de RabbitMQ
+      RABBITMQ_DEFAULT_USER: myuser        
+      RABBITMQ_DEFAULT_PASS: mypassword    
     ports:
-      - "5672:5672"  # Puerto de conexión para los clientes RabbitMQ
-      - "15672:15672" # Puerto para la interfaz web de RabbitMQ (Opcional)
+      - "5672:5672" 
+      - "15672:15672" 
     networks:
       - app-network
 
   # Otros servicios como electricidad, ocupación, seguridad, temperatura
   electricidad:
-    build: ./electricidad
+    image: gchugo/sensor-electricidad:latest
     deploy:
       replicas: 7
     depends_on:
@@ -52,7 +48,7 @@ services:
       - app-network
 
   ocupacion:
-    build: ./ocupacion
+    image: gchugo/sensor-ocupacion:latest
     deploy:
       replicas: 6
     depends_on:
@@ -61,7 +57,7 @@ services:
       - app-network
 
   seguridad:
-    build: ./seguridad
+    image: gchugo/sensor-seguridad:latest
     deploy:
       replicas: 3
     depends_on:
@@ -70,7 +66,7 @@ services:
       - app-network
 
   temperatura:
-    build: ./temperatura
+    image: gchugo/sensor-temperatura:latest
     deploy:
       replicas: 4
     depends_on:
