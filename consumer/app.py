@@ -5,7 +5,9 @@ import json
 import logging
 import threading
 import time
+from flask import Flask, send_from_directory
 
+app = Flask(__name__)
 # Configuración del logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -75,17 +77,31 @@ def consume(sensor: str):
     except Exception as e:
         logger.error(f"Error inesperado: {e}")
 
-# Función principal que ejecuta el consumidor para cada sensor en un hilo
-if __name__ == '__main__':
+
+# Ejecutar el consumidor en hilos
+def start_consumers():
     sensors = ['sensor_temperature', 'sensor_occupancy', 'sensor_energy', 'sensor_security']
-    
-    # Crear y arrancar un hilo para cada sensor
     threads = []
     for sensor in sensors:
         thread = threading.Thread(target=consume, args=(sensor,))
         thread.start()
         threads.append(thread)
-    
-    # Esperar a que todos los hilos terminen (aunque en este caso, el consumo es indefinido)
     for thread in threads:
         thread.join()
+
+# Directorio donde se almacenan los archivos CSV en el contenedor del consumer
+CSV_DIRECTORY = '/app/data'
+
+@app.route('/csv/<filename>', methods=['GET'])
+def get_csv_file(filename):
+    try:
+        return send_from_directory(CSV_DIRECTORY, filename, as_attachment=True)
+    except FileNotFoundError:
+        return {"File not found "}, 404
+
+# Función principal que ejecuta el consumidor para cada sensor en un hilo
+if __name__ == '__main__':
+        # Iniciar los consumidores en hilos
+    threading.Thread(target=start_consumers).start()
+    # Iniciar el servidor Flask
+    app.run(host='0.0.0.0', port=5002)
