@@ -104,4 +104,4 @@ Puedes montar la infraestructura utilizando Docker Compose. Los contenedores nec
    curl -X GET http://localhost:5001/api/get_csv/sensor_occupancy.csv --output sensor_occupancy.csv
    curl -X GET http://localhost:5001/api/get_csv/sensor_energy.csv --output sensor_energy.csv
    curl -X GET http://localhost:5001/api/get_csv/sensor_security.csv --output sensor_security.csv
-   ```
+   ``` 
