@@ -10,11 +10,11 @@ services:
       - RABBITMQ_PASSWORD=mypassword
     networks:
       - app-network
-      
+
   # Consumer
   consumer:
     container_name: consumer
-    image: gchugo
+    image: gchugo/consumer:latest
     ports:
       - "5002:5002"
     environment:
