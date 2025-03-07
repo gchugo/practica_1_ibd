@@ -1,10 +1,12 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, Response
 import pika
 import json
 import os
+import requests
 import logging
 import time
 from collections import deque
+
 
 # Configuración del logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -73,6 +75,29 @@ def send_to_rabbitmq(sensor, data):
     except Exception as e:
         logger.error(f"Error al enviar datos a {sensor}: {e}")
 
+# Función para recibir datos de un sensor específico
+def on_response(ch, method, props, body):
+    global response
+    response = json.loads(body)
+
+CONSUMER_URL = "http://consumer:5002"
+
+@app.route("/api/get_csv/<filename>", methods=["GET"])
+def get_csv_from_consumer(filename):
+    try:
+        # Hacer una solicitud GET al consumer para obtener el CSV
+        response = requests.get(f"{CONSUMER_URL}/csv/{filename}")
+
+        if response.status_code == 200:
+            # Retornar el CSV como respuesta
+            return Response(response.content, mimetype='text/csv', headers={
+                "Content-Disposition": f"attachment;filename={filename}"
+            })
+        else:
+            return jsonify({"error": "No se conecta"}), 404
+    except Exception as e:
+        return jsonify({"error": f"Error retrieving file: {str(e)}"}), 500
+
 # Función para procesar el buffer de energía y enviarlo en lotes
 def process_energy_buffer():
     global last_sent_time_energy
@@ -131,6 +156,28 @@ def receive_security_data():
     except Exception as e:
         logger.error(f"Error en /api/security: {e}")
         return jsonify({"error": "Error processing security data"}), 500
+    
+CONSUMER_URL = os.getenv('CONSUMER_URL', 'http://consumer:5002')
+
+# Ruta en el contenedor de la API donde se almacenan los archivos CSV (si es necesario)
+CSV_DIRECTORY = '/app/data'
+
+@app.route('/api/get_csv/<sensor>', methods=['GET'])
+def get_csv(sensor):
+    try:
+        # Hacemos un GET al consumer para obtener el archivo CSV
+        response = requests.get(f"{CONSUMER_URL}/csv/{sensor}")
+
+        if response.status_code == 200:
+            # Devolver el archivo CSV obtenido del consumer
+            return Response(response.content, mimetype='text/csv', headers={
+                "Content-Disposition": f"attachment;filename={sensor}"
+            })
+        else:
+            return jsonify({"error": f"CSV file for {sensor} not found"}), 404
+    except Exception as e:
+        return jsonify({"error": f"Error retrieving file: {str(e)}"}), 500
+
 
 # Cerrar conexiones al salir
 def close_connections():
